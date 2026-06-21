@@ -50,45 +50,47 @@ export interface QuoteResult {
   volume: number;
 }
 
-// In-memory cache (per serverless instance, short-lived but helps within a request burst)
-const cache = new Map<string, { data: QuoteResult[]; ts: number }>();
+const cache = new Map<string, { data: QuoteResult; ts: number }>();
 const TTL = 4 * 60 * 1000;
 
-export async function getQuotes(tickers: string[]): Promise<QuoteResult[]> {
-  const key = tickers.join(",");
-  const hit = cache.get(key);
-  if (hit && Date.now() - hit.ts < TTL) return hit.data;
+async function fetchOne(ticker: string): Promise<QuoteResult> {
+  const cached = cache.get(ticker);
+  if (cached && Date.now() - cached.ts < TTL) return cached.data;
 
-  // Yahoo Finance v7 quote endpoint — works from server-side fetch
-  const symbols = tickers.join(",");
-  const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(symbols)}&fields=regularMarketPrice,regularMarketChangePercent,regularMarketVolume`;
+  const encoded = encodeURIComponent(ticker);
+  // v8 chart API — no crumb/cookie needed, works from server-side
+  const url = `https://query2.finance.yahoo.com/v8/finance/chart/${encoded}?interval=1d&range=5d&includePrePost=false`;
 
   try {
     const res = await fetch(url, {
       headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-        "Accept": "application/json",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        "Accept": "application/json, text/plain, */*",
         "Accept-Language": "en-US,en;q=0.9",
-        "Referer": "https://finance.yahoo.com",
+        "Origin": "https://finance.yahoo.com",
+        "Referer": "https://finance.yahoo.com/",
       },
-      next: { revalidate: 240 },
     });
-
-    if (!res.ok) throw new Error(`Yahoo Finance returned ${res.status}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const json = await res.json();
-    const quotes: QuoteResult[] = (json?.quoteResponse?.result ?? []).map((q: Record<string, unknown>) => ({
-      ticker: q.symbol as string,
-      price: (q.regularMarketPrice as number) ?? 0,
-      change: (q.regularMarketChangePercent as number) ?? 0,
-      volume: (q.regularMarketVolume as number) ?? 0,
-    }));
-
-    // Fill missing tickers with zeros
-    const result = tickers.map((t) => quotes.find((q) => q.ticker === t) ?? { ticker: t, price: 0, change: 0, volume: 0 });
-    cache.set(key, { data: result, ts: Date.now() });
+    const meta = json?.chart?.result?.[0]?.meta ?? {};
+    const price: number = meta.regularMarketPrice ?? 0;
+    const prevClose: number = meta.previousClose ?? meta.chartPreviousClose ?? price;
+    const change = prevClose && prevClose !== price
+      ? ((price - prevClose) / prevClose) * 100
+      : meta.regularMarketChangePercent ?? 0;
+    const result: QuoteResult = { ticker, price, change, volume: meta.regularMarketVolume ?? 0 };
+    cache.set(ticker, { data: result, ts: Date.now() });
     return result;
-  } catch (err) {
-    console.error("Yahoo Finance fetch failed:", err);
-    return tickers.map((t) => ({ ticker: t, price: 0, change: 0, volume: 0 }));
+  } catch {
+    return { ticker, price: 0, change: 0, volume: 0 };
   }
+}
+
+export async function getQuotes(tickers: string[]): Promise<QuoteResult[]> {
+  // Deduplicate
+  const unique = [...new Set(tickers)];
+  const results = await Promise.all(unique.map(fetchOne));
+  // Return in original order
+  return tickers.map((t) => results.find((r) => r.ticker === t) ?? { ticker: t, price: 0, change: 0, volume: 0 });
 }

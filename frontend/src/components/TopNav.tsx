@@ -56,7 +56,8 @@ export default function TopNav() {
     { label: t("nav_hero"), href: "/" },
     { label: t("nav_dashboard"), href: "/dashboard/regions" },
     { label: t("nav_canvas"), href: "/canvas" },
-    { label: t("nav_report"), href: "/others/daily" },
+    { label: t("nav_research"), href: "/others/daily" },
+    { label: t("nav_notes"), href: "/notes" },
   ];
 
   const results = q.trim().length > 0
