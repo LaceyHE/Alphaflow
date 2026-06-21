@@ -4,7 +4,7 @@ import { useLang } from "@/contexts/LangContext";
 
 interface Message { role: "user" | "ai"; content: string }
 
-const AI_RESPONSES: Record<string, string> = {
+const AI_RESPONSES = {
   en: {
     default: "Based on current data, capital is rotating into Technology (+10.5%) and out of Energy (-12.3%) this week. Risk-ON signal is active with SPX +1.77%. Japan leads regional flows (+6.6%). Want me to drill into any specific area?",
     sectors: "Top performing sectors: Technology (+10.5%), Financials (+4.2%), Healthcare (+2.8%). Underperforming: Energy (-12.3%), Utilities (-3.1%). The Tech rotation has been ongoing for 3 weeks — historically this signals continued momentum for 2-4 more weeks.",
@@ -19,7 +19,7 @@ const AI_RESPONSES: Record<string, string> = {
     risk: "当前市场情绪：风险偏好。VIX低于20（恐慌度低）。标普500上升趋势。债券收益率稳定。美元走弱 = 新兴市场看涨。牛熊综合指数为+0.65，处于明确的风险偏好区间。",
     inflows: "本周最强资金流入：(1) 科技 +10.5%，(2) 日本 +6.6%，(3) 印度 +4.1%，(4) 金融 +4.2%，(5) 黄金 +2.1%。AI/半导体主题持续主导市场。",
   },
-} as any;
+};
 
 function getResponse(msg: string, lang: string): string {
   const responses = lang === "zh" ? AI_RESPONSES.zh : AI_RESPONSES.en;
