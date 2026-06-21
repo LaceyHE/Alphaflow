@@ -96,7 +96,7 @@ export default function AssetsPage() {
           <div className="card" style={{ padding: "16px 18px", marginBottom: 14 }}>
             <div className="section-label" style={{ marginBottom: 12 }}>{selectedAsset.name} · PRICE HISTORY</div>
             <ResponsiveContainer width="100%" height={180}>
-              <AreaChart data={selectedAsset.history.map((v, i) => ({ i, v }))}>
+              <AreaChart data={(selectedAsset.history ?? []).map((v, i) => ({ i, v }))}>
                 <defs>
                   <linearGradient id="ag" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor={selectedAsset.change >= 0 ? "#16a34a" : "#dc2626"} stopOpacity={0.15} />
