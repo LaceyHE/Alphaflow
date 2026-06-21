@@ -43,8 +43,8 @@ export interface NarrativeData {
 }
 
 export interface SankeyData {
-  nodes: { name: string }[];
-  links: { source: number; target: number; value: number }[];
+  nodes: { id: string; layer: number; change: number }[];
+  links: { source: string; target: string; value: number; change: number }[];
   tf?: string;
 }
 

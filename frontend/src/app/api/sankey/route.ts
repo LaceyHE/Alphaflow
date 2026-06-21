@@ -10,30 +10,37 @@ export async function GET(req: Request) {
   ];
   const quotes = await getQuotes(allTickers);
 
-  const nodes = [
-    ...ASSETS.map((a) => ({ name: a.name })),
-    ...REGIONS.slice(0, 4).map((r) => ({ name: r.name })),
-    ...SECTORS.slice(0, 5).map((s) => ({ name: s.name })),
-  ];
+  const getChange = (ticker: string) =>
+    quotes.find((q: QuoteResult) => q.ticker === ticker)?.change ?? 0;
 
-  const links: { source: number; target: number; value: number }[] = [];
-  const assetCount = ASSETS.length;
-  const regionCount = 4;
+  const assetNodes = ASSETS.map((a) => ({
+    id: a.name, layer: 0, change: getChange(a.ticker),
+  }));
+  const regionNodes = REGIONS.slice(0, 4).map((r) => ({
+    id: r.name, layer: 1, change: getChange(r.ticker),
+  }));
+  const sectorNodes = SECTORS.slice(0, 5).map((s) => ({
+    id: s.name, layer: 2, change: getChange(s.ticker),
+  }));
 
-  ASSETS.forEach((a, ai) => {
-    const aq = quotes.find((q: QuoteResult) => q.ticker === a.ticker);
-    REGIONS.slice(0, 4).forEach((r, ri) => {
-      const rq = quotes.find((q: QuoteResult) => q.ticker === r.ticker);
-      const val = Math.max(0.5, Math.abs(((aq?.change ?? 1) + (rq?.change ?? 1)) / 2) + 2);
-      links.push({ source: ai, target: assetCount + ri, value: val });
+  const nodes = [...assetNodes, ...regionNodes, ...sectorNodes];
+
+  const links: { source: string; target: string; value: number; change: number }[] = [];
+
+  ASSETS.forEach((a) => {
+    const ac = getChange(a.ticker);
+    REGIONS.slice(0, 4).forEach((r) => {
+      const rc = getChange(r.ticker);
+      const val = Math.max(0.5, Math.abs((ac + rc) / 2) + 2);
+      links.push({ source: a.name, target: r.name, value: val, change: (ac + rc) / 2 });
     });
   });
 
-  REGIONS.slice(0, 4).forEach((_r, ri) => {
-    SECTORS.slice(0, 5).forEach((s, si) => {
-      const sq = quotes.find((q: QuoteResult) => q.ticker === s.ticker);
-      const val = Math.max(0.5, Math.abs(sq?.change ?? 1) + 1);
-      links.push({ source: assetCount + ri, target: assetCount + regionCount + si, value: val });
+  REGIONS.slice(0, 4).forEach((r) => {
+    SECTORS.slice(0, 5).forEach((s) => {
+      const sc = getChange(s.ticker);
+      const val = Math.max(0.5, Math.abs(sc) + 1);
+      links.push({ source: r.name, target: s.name, value: val, change: sc });
     });
   });
 
