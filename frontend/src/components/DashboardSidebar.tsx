@@ -2,11 +2,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const GROUPS = [
-  {
+const SECTIONS = {
+  dashboard: {
     label: "Flow Analytics",
     items: [
-      { label: "Overview", href: "/" },
       { label: "Region Flow", href: "/dashboard/regions" },
       { label: "Asset Flow", href: "/dashboard/assets" },
       { label: "Sector Flow", href: "/dashboard/sectors" },
@@ -14,8 +13,8 @@ const GROUPS = [
       { label: "Earnings", href: "/dashboard/earnings" },
     ],
   },
-  {
-    label: "Research",
+  research: {
+    label: "Research Hub",
     items: [
       { label: "Macro Index", href: "/others/macro" },
       { label: "Economic Data", href: "/others/economic" },
@@ -23,7 +22,7 @@ const GROUPS = [
       { label: "AI Analysis", href: "/others/chat" },
     ],
   },
-  {
+  canvas: {
     label: "Canvas",
     items: [
       { label: "Backtest", href: "/canvas" },
@@ -31,10 +30,19 @@ const GROUPS = [
       { label: "Seasonality", href: "/canvas/seasonal" },
     ],
   },
-];
+};
 
 export default function DashboardSidebar() {
   const path = usePathname();
+
+  const sectionKey =
+    path.startsWith("/dashboard") ? "dashboard" :
+    path.startsWith("/canvas") ? "canvas" :
+    path.startsWith("/others") ? "research" :
+    null;
+
+  const section = sectionKey ? SECTIONS[sectionKey] : null;
+  if (!section) return null;
 
   return (
     <aside style={{
@@ -43,37 +51,35 @@ export default function DashboardSidebar() {
       height: "calc(100vh - 56px)",
       position: "sticky", top: 56,
       overflowY: "auto", background: "#fff",
-      paddingTop: 10, paddingBottom: 16,
+      paddingTop: 12, paddingBottom: 16,
     }}>
-      {GROUPS.map(group => (
-        <div key={group.label} style={{ marginBottom: 2 }}>
-          <div style={{
-            padding: "10px 16px 5px",
-            fontSize: 10, fontWeight: 700, letterSpacing: "0.1em",
-            textTransform: "uppercase", color: "#94a3b8",
+      <div style={{
+        padding: "6px 16px 10px",
+        fontSize: 10, fontWeight: 700, letterSpacing: "0.1em",
+        textTransform: "uppercase", color: "#94a3b8",
+      }}>
+        {section.label}
+      </div>
+      {section.items.map(item => {
+        const active = item.href === "/canvas"
+          ? path === "/canvas"
+          : path.startsWith(item.href);
+        return (
+          <Link key={item.href} href={item.href} style={{
+            display: "flex", alignItems: "center",
+            padding: "8px 16px", fontSize: 14,
+            fontWeight: active ? 600 : 400,
+            color: active ? "#1e3a5f" : "#475569",
+            background: active ? "#eff6ff" : "transparent",
+            textDecoration: "none",
+            borderLeft: `2px solid ${active ? "#1e3a5f" : "transparent"}`,
+            marginLeft: 2,
+            transition: "all 0.1s",
           }}>
-            {group.label}
-          </div>
-          {group.items.map(item => {
-            const active = item.href !== "/" && path.startsWith(item.href);
-            return (
-              <Link key={item.href} href={item.href} style={{
-                display: "flex", alignItems: "center",
-                padding: "7px 16px", fontSize: 14,
-                fontWeight: active ? 600 : 400,
-                color: active ? "#1e3a5f" : "#475569",
-                background: active ? "#eff6ff" : "transparent",
-                textDecoration: "none",
-                borderLeft: `2px solid ${active ? "#1e3a5f" : "transparent"}`,
-                marginLeft: 2,
-                transition: "all 0.1s",
-              }}>
-                {item.label}
-              </Link>
-            );
-          })}
-        </div>
-      ))}
+            {item.label}
+          </Link>
+        );
+      })}
     </aside>
   );
 }

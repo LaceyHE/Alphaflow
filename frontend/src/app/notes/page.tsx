@@ -19,11 +19,18 @@ interface Folder {
 }
 
 const DEFAULT_FOLDERS: Folder[] = [
-  { id: "starred", name: "收藏 Favorites", color: "#f59e0b", isDefault: true },
+  { id: "starred", name: "Favorites", color: "#f59e0b", isDefault: true },
   { id: "research", name: "Research Notes", color: "#2563eb", isDefault: true },
   { id: "ideas", name: "Trade Ideas", color: "#16a34a", isDefault: true },
   { id: "macro", name: "Macro Insights", color: "#7c3aed", isDefault: true },
 ];
+
+const ZH_NAMES: Record<string, string> = {
+  starred: "收藏",
+  research: "研究笔记",
+  ideas: "交易想法",
+  macro: "宏观洞察",
+};
 
 const SAMPLE_NOTES: Note[] = [
   { id: "1", title: "Tech Rotation Watch", content: "XLK breaking out vs XLE. Watch for continuation above $200. Risk: Fed hawkishness could reverse.", folder: "research", createdAt: "2025-06-20", starred: true },
@@ -102,6 +109,7 @@ export default function NotesPage() {
   };
 
   const activeF = folders.find(f => f.id === activeFolder);
+  const displayName = (f: Folder) => lang === "zh" && ZH_NAMES[f.id] ? ZH_NAMES[f.id] : f.name;
 
   return (
     <div style={{ display: "flex", height: "calc(100vh - 56px)", background: "#f8fafc" }}>
@@ -134,7 +142,7 @@ export default function NotesPage() {
                 fontFamily: "inherit",
               }}>
                 <span style={{ width: 8, height: 8, borderRadius: "50%", background: folder.color, flexShrink: 0 }} />
-                <span style={{ flex: 1, fontSize: 13, fontWeight: active ? 600 : 400, color: active ? "#0f172a" : "#475569" }}>{folder.name}</span>
+                <span style={{ flex: 1, fontSize: 13, fontWeight: active ? 600 : 400, color: active ? "#0f172a" : "#475569" }}>{displayName(folder)}</span>
                 <span style={{ fontSize: 11, color: "#94a3b8", background: "#f1f5f9", padding: "1px 6px", borderRadius: 10 }}>{count}</span>
               </button>
             );
@@ -176,7 +184,7 @@ export default function NotesPage() {
         <div style={{ padding: "14px 14px 10px", borderBottom: "1px solid #f1f5f9", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
             {activeF && <span style={{ width: 10, height: 10, borderRadius: "50%", background: activeF.color, flexShrink: 0 }} />}
-            <span style={{ fontSize: 14, fontWeight: 700, color: "#0f172a" }}>{activeF?.name}</span>
+            <span style={{ fontSize: 14, fontWeight: 700, color: "#0f172a" }}>{activeF ? displayName(activeF) : ""}</span>
           </div>
           <button onClick={createNote} style={{
             width: 28, height: 28, borderRadius: 6, background: "#1e3a5f", border: "none",

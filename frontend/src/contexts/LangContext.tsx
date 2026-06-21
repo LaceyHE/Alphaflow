@@ -5,7 +5,7 @@ export type Lang = "en" | "zh";
 
 export const T = {
   en: {
-    nav_hero: "Hero", nav_dashboard: "Dashboard", nav_canvas: "Canvas", nav_report: "Report", nav_research: "Research Hub", nav_notes: "Notes",
+    nav_hero: "Top Line", nav_dashboard: "Dashboard", nav_canvas: "Canvas", nav_report: "Report", nav_research: "Research Hub", nav_notes: "Notes",
     sign_in: "Sign In", get_access: "Get Access", sign_out: "Sign Out", lang_toggle: "中文",
     search_placeholder: "Search assets, sectors, regions...",
     live: "Live",
@@ -44,7 +44,7 @@ export const T = {
     demo_hint: "Demo: any email + password",
   },
   zh: {
-    nav_hero: "首页", nav_dashboard: "仪表板", nav_canvas: "画布", nav_report: "报告", nav_research: "研究中心", nav_notes: "笔记",
+    nav_hero: "行情总览", nav_dashboard: "仪表板", nav_canvas: "画布", nav_report: "报告", nav_research: "研究中心", nav_notes: "笔记",
     sign_in: "登录", get_access: "注册", sign_out: "退出", lang_toggle: "EN",
     search_placeholder: "搜索资产、板块、地区...",
     live: "实时",
