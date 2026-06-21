@@ -9,7 +9,7 @@ export async function GET(req: Request) {
     ...ASSETS.map((a) => a.ticker),
     "^GSPC", "^VIX",
   ];
-  const quotes = await getQuotes(allTickers);
+  const quotes = await getQuotes(allTickers, tf);
 
   const spxChange = quotes.find((q: QuoteResult) => q.ticker === "^GSPC")?.change ?? 0;
   const vixPrice = quotes.find((q: QuoteResult) => q.ticker === "^VIX")?.price ?? 20;

@@ -8,7 +8,7 @@ export async function GET(req: Request) {
     ...REGIONS.map((r) => r.ticker),
     ...SECTORS.map((s) => s.ticker),
   ];
-  const quotes = await getQuotes(allTickers);
+  const quotes = await getQuotes(allTickers, tf);
 
   const getChange = (ticker: string) =>
     quotes.find((q: QuoteResult) => q.ticker === ticker)?.change ?? 0;

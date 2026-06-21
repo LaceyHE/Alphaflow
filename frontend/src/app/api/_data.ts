@@ -43,55 +43,104 @@ export const MACRO_TICKERS: Record<string, string> = {
   "DXY": "DX-Y.NYB",
 };
 
+// Maps UI timeframe → Yahoo Finance chart API params
+const TF_PARAMS: Record<string, { range: string; interval: string }> = {
+  "1D":  { range: "1d",  interval: "5m"  },
+  "3D":  { range: "5d",  interval: "1d"  },
+  "7D":  { range: "5d",  interval: "1d"  },
+  "1M":  { range: "1mo", interval: "1d"  },
+  "YTD": { range: "ytd", interval: "1d"  },
+};
+
+// How many bars back to look for the "start" price on multi-day timeframes
+const TF_BARS_BACK: Record<string, number> = {
+  "1D":  0,  // use meta.regularMarketChangePercent (intraday)
+  "3D":  3,
+  "7D":  5,  // 5 trading days ≈ 7 calendar days
+  "1M":  0,  // use all bars in 1mo range
+  "YTD": 0,  // use all bars in ytd range
+};
+
 export interface QuoteResult {
   ticker: string;
   price: number;
-  change: number;
+  change: number; // % change for the selected timeframe
   volume: number;
 }
 
+// Cache keyed by "ticker|tf"
 const cache = new Map<string, { data: QuoteResult; ts: number }>();
 const TTL = 4 * 60 * 1000;
 
-async function fetchOne(ticker: string): Promise<QuoteResult> {
-  const cached = cache.get(ticker);
+const HEADERS = {
+  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+  "Accept": "application/json, text/plain, */*",
+  "Accept-Language": "en-US,en;q=0.9",
+  "Origin": "https://finance.yahoo.com",
+  "Referer": "https://finance.yahoo.com/",
+};
+
+async function fetchOne(ticker: string, tf: string): Promise<QuoteResult> {
+  const cacheKey = `${ticker}|${tf}`;
+  const cached = cache.get(cacheKey);
   if (cached && Date.now() - cached.ts < TTL) return cached.data;
 
+  const { range, interval } = TF_PARAMS[tf] ?? TF_PARAMS["7D"];
   const encoded = encodeURIComponent(ticker);
-  // v8 chart API — no crumb/cookie needed, works from server-side
-  const url = `https://query2.finance.yahoo.com/v8/finance/chart/${encoded}?interval=1d&range=5d&includePrePost=false`;
+  const url = `https://query2.finance.yahoo.com/v8/finance/chart/${encoded}?interval=${interval}&range=${range}&includePrePost=false`;
 
   try {
-    const res = await fetch(url, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-        "Accept": "application/json, text/plain, */*",
-        "Accept-Language": "en-US,en;q=0.9",
-        "Origin": "https://finance.yahoo.com",
-        "Referer": "https://finance.yahoo.com/",
-      },
-    });
+    const res = await fetch(url, { headers: HEADERS });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const json = await res.json();
-    const meta = json?.chart?.result?.[0]?.meta ?? {};
+    const result0 = json?.chart?.result?.[0];
+    const meta = result0?.meta ?? {};
     const price: number = meta.regularMarketPrice ?? 0;
-    const prevClose: number = meta.previousClose ?? meta.chartPreviousClose ?? price;
-    const change = prevClose && prevClose !== price
-      ? ((price - prevClose) / prevClose) * 100
-      : meta.regularMarketChangePercent ?? 0;
+
+    let change = 0;
+
+    if (tf === "1D") {
+      // For 1D use the intraday % change from meta
+      const prevClose: number = meta.previousClose ?? meta.chartPreviousClose ?? price;
+      change = prevClose && prevClose !== price
+        ? ((price - prevClose) / prevClose) * 100
+        : (meta.regularMarketChangePercent ?? 0);
+    } else {
+      // For multi-day: use close price array to compute first→last change
+      const closes: number[] = result0?.indicators?.quote?.[0]?.close ?? [];
+      const validCloses = closes.filter((v): v is number => v !== null && v !== undefined && !isNaN(v));
+
+      if (validCloses.length >= 2) {
+        const barsBack = TF_BARS_BACK[tf];
+        // For 3D, start price is the close 3 bars ago (or oldest available)
+        const startIdx = barsBack > 0
+          ? Math.max(0, validCloses.length - 1 - barsBack)
+          : 0;
+        const startPrice = validCloses[startIdx];
+        const endPrice = validCloses[validCloses.length - 1];
+        if (startPrice && startPrice !== 0) {
+          change = ((endPrice - startPrice) / startPrice) * 100;
+        }
+      } else {
+        // Fallback to 1D change if no history available
+        const prevClose: number = meta.previousClose ?? meta.chartPreviousClose ?? price;
+        change = prevClose && prevClose !== price
+          ? ((price - prevClose) / prevClose) * 100
+          : (meta.regularMarketChangePercent ?? 0);
+      }
+    }
+
     const result: QuoteResult = { ticker, price, change, volume: meta.regularMarketVolume ?? 0 };
-    cache.set(ticker, { data: result, ts: Date.now() });
+    cache.set(cacheKey, { data: result, ts: Date.now() });
     return result;
   } catch {
     return { ticker, price: 0, change: 0, volume: 0 };
   }
 }
 
-export async function getQuotes(tickers: string[]): Promise<QuoteResult[]> {
-  // Deduplicate
+export async function getQuotes(tickers: string[], tf = "7D"): Promise<QuoteResult[]> {
   const seen = new Set<string>();
   const unique = tickers.filter(t => { if (seen.has(t)) return false; seen.add(t); return true; });
-  const results = await Promise.all(unique.map(fetchOne));
-  // Return in original order
-  return tickers.map((t) => results.find((r) => r.ticker === t) ?? { ticker: t, price: 0, change: 0, volume: 0 });
+  const results = await Promise.all(unique.map(t => fetchOne(t, tf)));
+  return tickers.map(t => results.find(r => r.ticker === t) ?? { ticker: t, price: 0, change: 0, volume: 0 });
 }
