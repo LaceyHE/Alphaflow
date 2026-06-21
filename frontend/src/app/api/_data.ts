@@ -1,5 +1,3 @@
-import yahooFinance from "yahoo-finance2";
-
 export const SECTORS = [
   { name: "Technology", ticker: "XLK" },
   { name: "Financials", ticker: "XLF" },
@@ -52,31 +50,45 @@ export interface QuoteResult {
   volume: number;
 }
 
+// In-memory cache (per serverless instance, short-lived but helps within a request burst)
 const cache = new Map<string, { data: QuoteResult[]; ts: number }>();
-const TTL = 5 * 60 * 1000; // 5 min
+const TTL = 4 * 60 * 1000;
 
 export async function getQuotes(tickers: string[]): Promise<QuoteResult[]> {
   const key = tickers.join(",");
   const hit = cache.get(key);
   if (hit && Date.now() - hit.ts < TTL) return hit.data;
 
-  const results = await Promise.all(
-    tickers.map(async (ticker) => {
-      try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const q: any = await yahooFinance.quote(ticker);
-        return {
-          ticker,
-          price: (q.regularMarketPrice as number) ?? 0,
-          change: (q.regularMarketChangePercent as number) ?? 0,
-          volume: (q.regularMarketVolume as number) ?? 0,
-        };
-      } catch {
-        return { ticker, price: 0, change: 0, volume: 0 };
-      }
-    })
-  );
+  // Yahoo Finance v7 quote endpoint — works from server-side fetch
+  const symbols = tickers.join(",");
+  const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(symbols)}&fields=regularMarketPrice,regularMarketChangePercent,regularMarketVolume`;
 
-  cache.set(key, { data: results, ts: Date.now() });
-  return results;
+  try {
+    const res = await fetch(url, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "Accept": "application/json",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Referer": "https://finance.yahoo.com",
+      },
+      next: { revalidate: 240 },
+    });
+
+    if (!res.ok) throw new Error(`Yahoo Finance returned ${res.status}`);
+    const json = await res.json();
+    const quotes: QuoteResult[] = (json?.quoteResponse?.result ?? []).map((q: Record<string, unknown>) => ({
+      ticker: q.symbol as string,
+      price: (q.regularMarketPrice as number) ?? 0,
+      change: (q.regularMarketChangePercent as number) ?? 0,
+      volume: (q.regularMarketVolume as number) ?? 0,
+    }));
+
+    // Fill missing tickers with zeros
+    const result = tickers.map((t) => quotes.find((q) => q.ticker === t) ?? { ticker: t, price: 0, change: 0, volume: 0 });
+    cache.set(key, { data: result, ts: Date.now() });
+    return result;
+  } catch (err) {
+    console.error("Yahoo Finance fetch failed:", err);
+    return tickers.map((t) => ({ ticker: t, price: 0, change: 0, volume: 0 }));
+  }
 }
