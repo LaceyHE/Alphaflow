@@ -89,7 +89,8 @@ async function fetchOne(ticker: string): Promise<QuoteResult> {
 
 export async function getQuotes(tickers: string[]): Promise<QuoteResult[]> {
   // Deduplicate
-  const unique = [...new Set(tickers)];
+  const seen = new Set<string>();
+  const unique = tickers.filter(t => { if (seen.has(t)) return false; seen.add(t); return true; });
   const results = await Promise.all(unique.map(fetchOne));
   // Return in original order
   return tickers.map((t) => results.find((r) => r.ticker === t) ?? { ticker: t, price: 0, change: 0, volume: 0 });
