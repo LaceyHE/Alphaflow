@@ -45,10 +45,17 @@ export const MACRO_TICKERS: Record<string, string> = {
   "DXY": "DX-Y.NYB",
 };
 
-const cache = new Map<string, { data: any; ts: number }>();
+export interface QuoteResult {
+  ticker: string;
+  price: number;
+  change: number;
+  volume: number;
+}
+
+const cache = new Map<string, { data: QuoteResult[]; ts: number }>();
 const TTL = 5 * 60 * 1000; // 5 min
 
-export async function getQuotes(tickers: string[]) {
+export async function getQuotes(tickers: string[]): Promise<QuoteResult[]> {
   const key = tickers.join(",");
   const hit = cache.get(key);
   if (hit && Date.now() - hit.ts < TTL) return hit.data;
