@@ -56,12 +56,13 @@ export async function getQuotes(tickers: string[]) {
   const results = await Promise.all(
     tickers.map(async (ticker) => {
       try {
-        const q = await yahooFinance.quote(ticker);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const q: any = await yahooFinance.quote(ticker);
         return {
           ticker,
-          price: q.regularMarketPrice ?? 0,
-          change: q.regularMarketChangePercent ?? 0,
-          volume: q.regularMarketVolume ?? 0,
+          price: (q.regularMarketPrice as number) ?? 0,
+          change: (q.regularMarketChangePercent as number) ?? 0,
+          volume: (q.regularMarketVolume as number) ?? 0,
         };
       } catch {
         return { ticker, price: 0, change: 0, volume: 0 };
