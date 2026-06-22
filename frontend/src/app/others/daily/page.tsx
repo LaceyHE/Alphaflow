@@ -23,12 +23,88 @@ const WATCHLIST = [
   { name: "EWJ", label: "Japan ETF", theme: "EM Asia" },
 ];
 
+const MODELS = [
+  { id: "claude-haiku-4-5-20251001", label: "Claude Haiku 4.5 (Fast, ~$5/mo)" },
+  { id: "claude-sonnet-4-6",         label: "Claude Sonnet 4.6 (Balanced)" },
+  { id: "claude-opus-4-8",           label: "Claude Opus 4.8 (Most capable)" },
+  { id: "gpt-4o-mini",               label: "GPT-4o Mini (OpenAI)" },
+  { id: "gpt-4o",                    label: "GPT-4o (OpenAI)" },
+];
+
+function LLMSettings({ onClose }: { onClose: () => void }) {
+  const [provider, setProvider] = useState(() => typeof window !== "undefined" ? localStorage.getItem("llm_provider") || "anthropic" : "anthropic");
+  const [apiKey, setApiKey]     = useState(() => typeof window !== "undefined" ? localStorage.getItem("llm_key") || "" : "");
+  const [model, setModel]       = useState(() => typeof window !== "undefined" ? localStorage.getItem("llm_model") || "claude-haiku-4-5-20251001" : "claude-haiku-4-5-20251001");
+  const [saved, setSaved]       = useState(false);
+
+  const save = () => {
+    localStorage.setItem("llm_provider", provider);
+    localStorage.setItem("llm_key", apiKey);
+    localStorage.setItem("llm_model", model);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  };
+
+  const anthropicModels = MODELS.filter(m => !m.id.startsWith("gpt"));
+  const openaiModels    = MODELS.filter(m =>  m.id.startsWith("gpt"));
+  const displayModels   = provider === "anthropic" ? anthropicModels : openaiModels;
+
+  return (
+    <div style={{ marginBottom: 20, padding: "18px 20px", borderRadius: 10, border: "1px solid #1e3a5f30", background: "#f0f6ff" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ fontSize: 16 }}>⚙️</span>
+          <span style={{ fontSize: 13, fontWeight: 700, color: "#1e3a5f" }}>LLM Configuration</span>
+          {apiKey && <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 3, background: "#dcfce7", color: "#16a34a" }}>● CONNECTED</span>}
+        </div>
+        <button onClick={onClose} style={{ background: "none", border: "none", fontSize: 16, color: "#94a3b8", cursor: "pointer" }}>✕</button>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "auto 1fr 1fr auto", gap: 12, alignItems: "end" }}>
+        <div>
+          <label style={{ fontSize: 11, fontWeight: 700, color: "#64748b", display: "block", marginBottom: 5, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>Provider</label>
+          <div style={{ display: "flex", gap: 6 }}>
+            {[{ id: "anthropic", label: "Anthropic" }, { id: "openai", label: "OpenAI" }].map(p => (
+              <button key={p.id} onClick={() => { setProvider(p.id); setModel(p.id === "anthropic" ? "claude-haiku-4-5-20251001" : "gpt-4o-mini"); }} style={{
+                padding: "6px 14px", fontSize: 12, fontWeight: 700, fontFamily: "inherit",
+                background: provider === p.id ? "#1e3a5f" : "#fff",
+                color: provider === p.id ? "#fff" : "#64748b",
+                border: "1px solid #e2e8f0", borderRadius: 5, cursor: "pointer",
+              }}>{p.label}</button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <label style={{ fontSize: 11, fontWeight: 700, color: "#64748b", display: "block", marginBottom: 5, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>Model</label>
+          <select value={model} onChange={e => setModel(e.target.value)} style={{ width: "100%", height: 34, padding: "0 10px", border: "1px solid #e2e8f0", borderRadius: 5, fontSize: 12, fontFamily: "inherit", outline: "none", background: "#fff" }}>
+            {displayModels.map(m => <option key={m.id} value={m.id}>{m.label}</option>)}
+          </select>
+        </div>
+        <div>
+          <label style={{ fontSize: 11, fontWeight: 700, color: "#64748b", display: "block", marginBottom: 5, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>API Key</label>
+          <input
+            type="password" value={apiKey} onChange={e => setApiKey(e.target.value)}
+            placeholder={provider === "anthropic" ? "sk-ant-api03-…" : "sk-…"}
+            style={{ width: "100%", height: 34, padding: "0 10px", border: "1px solid #e2e8f0", borderRadius: 5, fontSize: 12, fontFamily: "inherit", outline: "none", background: "#fff", boxSizing: "border-box" as const }}
+          />
+        </div>
+        <button onClick={save} style={{ height: 34, padding: "0 18px", background: saved ? "#16a34a" : "#1e3a5f", color: "#fff", border: "none", borderRadius: 5, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" as const }}>
+          {saved ? "✓ Saved" : "Save"}
+        </button>
+      </div>
+      <p style={{ fontSize: 11, color: "#64748b", marginTop: 10 }}>
+        API key is stored locally in your browser. Phase 2 will use this key to generate real AI narratives via the {provider === "anthropic" ? "Anthropic" : "OpenAI"} API.
+      </p>
+    </div>
+  );
+}
+
 export default function DailyReportPage() {
   const { lang } = useLang();
   const [narrative, setNarrative] = useState<NarrativeData | null>(null);
   const [macro, setMacro] = useState<any>({});
   const [sectors, setSectors] = useState<any[]>([]);
   const [regions, setRegions] = useState<any[]>([]);
+  const [showLLM, setShowLLM] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -60,7 +136,7 @@ export default function DailyReportPage() {
       <main style={{ flex: 1, padding: "24px 32px", overflowY: "auto" }}>
 
         {/* Header */}
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 22 }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 16 }}>
           <div>
             <div className="section-label" style={{ marginBottom: 5 }}>
               {lang === "zh" ? "研究中心 · 每日流向报告" : "RESEARCH HUB · DAILY FLOW REPORT"}
@@ -70,6 +146,12 @@ export default function DailyReportPage() {
             </h1>
             <div style={{ fontSize: 13, color: "#64748b" }}>{today}</div>
           </div>
+          <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+          <button onClick={() => setShowLLM(v => !v)} style={{
+            padding: "8px 14px", borderRadius: 7, border: "1px solid #e2e8f0",
+            background: showLLM ? "#1e3a5f" : "#fff", color: showLLM ? "#fff" : "#64748b",
+            fontSize: 12, fontWeight: 600, fontFamily: "inherit", cursor: "pointer", display: "flex", alignItems: "center", gap: 6,
+          }}>⚙️ {lang === "zh" ? "配置 LLM" : "Configure LLM"}</button>
           {narrative && (
             <div style={{
               display: "flex", alignItems: "center", gap: 8, padding: "10px 16px",
@@ -87,7 +169,11 @@ export default function DailyReportPage() {
               </div>
             </div>
           )}
+          </div>
         </div>
+
+        {/* LLM Settings panel */}
+        {showLLM && <LLMSettings onClose={() => setShowLLM(false)} />}
 
         {/* Macro strip */}
         <div className="card" style={{ padding: "14px 18px", marginBottom: 16 }}>

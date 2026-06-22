@@ -248,31 +248,33 @@ function MetricCard({ label, item }: { label: string; item: { name: string; chan
 
 function MiniTable({ title, items }: { title: string; items: any[] }) {
   return (
-    <div className="card" style={{ flex: 1, overflow: "hidden" }}>
-      <div style={{ padding: "10px 14px", borderBottom: "1px solid #f1f5f9" }}>
+    <div className="card" style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
+      <div style={{ padding: "10px 14px", borderBottom: "1px solid #f1f5f9", flexShrink: 0 }}>
         <div className="section-label">{title}</div>
       </div>
       {items.length === 0 ? (
-        <div style={{ padding: "20px 14px", textAlign: "center" }}>
+        <div style={{ padding: "20px 14px" }}>
           {Array(4).fill(0).map((_, i) => (
             <div key={i} style={{ height: 14, background: "#f1f5f9", borderRadius: 3, marginBottom: 10 }} />
           ))}
         </div>
       ) : (
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
-          <tbody>
-            {items.map((item: any) => (
-              <tr key={item.name}>
-                <td style={{ padding: "8px 14px", fontSize: 13, fontWeight: 500, color: "#0f172a", borderBottom: "1px solid #f8fafc" }}>{item.name}</td>
-                <td style={{ padding: "8px 14px", textAlign: "right", borderBottom: "1px solid #f8fafc" }}>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: item.change >= 0 ? "#16a34a" : "#dc2626", fontVariantNumeric: "tabular-nums" }}>
-                    {item.change >= 0 ? "+" : ""}{item.change.toFixed(2)}%
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div style={{ overflowY: "auto", flex: 1 }}>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <tbody>
+              {items.map((item: any) => (
+                <tr key={item.name}>
+                  <td style={{ padding: "7px 14px", fontSize: 13, fontWeight: 500, color: "#0f172a", borderBottom: "1px solid #f8fafc" }}>{item.name}</td>
+                  <td style={{ padding: "7px 14px", textAlign: "right" as const, borderBottom: "1px solid #f8fafc" }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: item.change >= 0 ? "#16a34a" : "#dc2626", fontVariantNumeric: "tabular-nums" }}>
+                      {item.change >= 0 ? "+" : ""}{item.change.toFixed(2)}%
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

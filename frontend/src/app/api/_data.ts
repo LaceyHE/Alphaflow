@@ -33,14 +33,26 @@ export const ASSETS = [
 ];
 
 export const MACRO_TICKERS: Record<string, string> = {
-  "S&P 500": "^GSPC",
-  "Nasdaq": "^IXIC",
-  "Dow Jones": "^DJI",
-  "VIX": "^VIX",
-  "10Y Treasury": "^TNX",
-  "Gold": "GC=F",
-  "Oil (WTI)": "CL=F",
-  "DXY": "DX-Y.NYB",
+  "S&P 500":     "^GSPC",
+  "Nasdaq":      "^IXIC",
+  "Dow Jones":   "^DJI",
+  "VIX":         "^VIX",
+  "10Y Treasury":"^TNX",
+  "5Y Treasury": "^FVX",
+  "30Y Treasury":"^TYX",
+  "Gold":        "GC=F",
+  "Silver":      "SI=F",
+  "Oil (WTI)":   "CL=F",
+  "Natural Gas":  "NG=F",
+  "Copper":      "HG=F",
+  "DXY":         "DX-Y.NYB",
+  "Bitcoin":     "BTC-USD",
+  "EUR/USD":     "EURUSD=X",
+  "JPY/USD":     "JPYUSD=X",
+  "Nikkei 225":  "^N225",
+  "DAX":         "^GDAXI",
+  "FTSE 100":    "^FTSE",
+  "Hang Seng":   "^HSI",
 };
 
 // Maps UI timeframe → Yahoo Finance chart API params

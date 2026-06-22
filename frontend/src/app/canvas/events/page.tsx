@@ -15,9 +15,10 @@ const PRESET_EVENTS = [
 const EVENTS = PRESET_EVENTS;
 
 const PAIRS = [
-  { key: "safe_haven", label: "Safe Haven (Gold / TLT)" },
-  { key: "risk_on", label: "Risk Assets (SPX / Tech)" },
-  { key: "commodities", label: "Commodities (Oil / Gold)" },
+  { key: "safe_haven",   label: "Safe Haven (Gold / TLT)" },
+  { key: "risk_on",      label: "Risk Assets (SPX / Tech)" },
+  { key: "commodities",  label: "Commodities (Oil / Gold)" },
+  { key: "custom_pair",  label: "Custom Pair (A / B)" },
 ];
 
 const MULTIPLIERS: Record<string, [number, number]> = {
@@ -66,11 +67,17 @@ export default function EventsPage() {
   const [customDate, setCustomDate] = useState("");
   const [customSummary, setCustomSummary] = useState("");
 
+  const [customTickerA, setCustomTickerA] = useState("NVDA");
+  const [customTickerB, setCustomTickerB] = useState("TLT");
+
   const isCustom = selEvent === "custom";
+  const isCustomPair = selPair === "custom_pair";
   const event = EVENTS.find(e => e.id === selEvent)!;
   const pair = PAIRS.find(p => p.key === selPair)!;
-  const data = makeData(isCustom ? "ukraine" : selEvent); // use default shape for custom
-  const pairLabels = pair.label.match(/\((.+)\)/)?.[1].split(" / ") ?? ["Asset 1", "Asset 2"];
+  const data = makeData(isCustom ? "ukraine" : selEvent);
+  const pairLabels = isCustomPair
+    ? [customTickerA || "Asset A", customTickerB || "Asset B"]
+    : (pair.label.match(/\((.+)\)/)?.[1].split(" / ") ?? ["Asset 1", "Asset 2"]);
 
   return (
     <div style={{ display: "flex", minHeight: "calc(100vh - 56px)" }}>
@@ -122,7 +129,7 @@ export default function EventsPage() {
               <div className="section-label" style={{ marginBottom: 2 }}>PRICE REACTION — Days Before/After Event</div>
               <div style={{ fontSize: 12, color: "#64748b" }}>Cumulative % change relative to T-20 days</div>
             </div>
-            <div style={{ display: "flex", gap: 6 }}>
+            <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
               {PAIRS.map(p => (
                 <button key={p.key} onClick={() => setSelPair(p.key)} style={{
                   padding: "5px 12px", fontSize: 11, fontWeight: 600, fontFamily: "inherit",
@@ -131,6 +138,15 @@ export default function EventsPage() {
                   border: "none", borderRadius: 4, cursor: "pointer",
                 }}>{p.label}</button>
               ))}
+              {isCustomPair && (
+                <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                  <input value={customTickerA} onChange={e => setCustomTickerA(e.target.value.toUpperCase())}
+                    placeholder="NVDA" style={{ width: 80, height: 28, padding: "0 8px", border: "1px solid #1e3a5f", borderRadius: 4, fontSize: 12, fontFamily: "monospace", outline: "none", textTransform: "uppercase" as const }} />
+                  <span style={{ color: "#94a3b8", fontSize: 12 }}>vs</span>
+                  <input value={customTickerB} onChange={e => setCustomTickerB(e.target.value.toUpperCase())}
+                    placeholder="TLT" style={{ width: 80, height: 28, padding: "0 8px", border: "1px solid #1e3a5f", borderRadius: 4, fontSize: 12, fontFamily: "monospace", outline: "none", textTransform: "uppercase" as const }} />
+                </div>
+              )}
             </div>
           </div>
           <ResponsiveContainer width="100%" height={320}>
