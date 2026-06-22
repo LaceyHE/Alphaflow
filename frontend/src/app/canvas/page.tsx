@@ -8,6 +8,7 @@ const STRATEGIES = [
   { id: "sma_cross", label: "SMA Crossover (50/200)", desc: "Long when 50-day MA crosses above 200-day MA" },
   { id: "rsi_rev", label: "RSI Reversal", desc: "Buy when RSI < 30, sell when RSI > 70" },
   { id: "buyhold", label: "Buy & Hold Benchmark", desc: "Simple passive hold of the selected asset" },
+  { id: "custom", label: "Custom Basket (Long/Short)", desc: "Enter your own long and short ticker baskets" },
 ];
 
 const ASSETS = [
@@ -17,6 +18,9 @@ const ASSETS = [
   { id: "TLT", label: "Long Bonds (TLT)" },
   { id: "BTC", label: "Bitcoin (BTC)" },
   { id: "EWJ", label: "Japan (EWJ)" },
+  { id: "XLK", label: "Tech Sector (XLK)" },
+  { id: "XLE", label: "Energy (XLE)" },
+  { id: "MCHI", label: "China (MCHI)" },
 ];
 
 function pseudoRng(str: string) {
@@ -88,12 +92,18 @@ export default function CanvasPage() {
   const [asset, setAsset] = useState("SPY");
   const [start, setStart] = useState("2020-01-01");
   const [end, setEnd] = useState("2024-12-31");
+  const [longBasket, setLongBasket] = useState("QQQ, NVDA, MSFT, AAPL");
+  const [shortBasket, setShortBasket] = useState("TLT, GLD");
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState<ReturnType<typeof buildBacktest> | null>(null);
 
+  const isCustom = strategy === "custom";
+
   const run = () => {
     setRunning(true);
-    setTimeout(() => { setResult(buildBacktest(strategy, asset, start, end)); setRunning(false); }, 700);
+    const runAsset = isCustom ? longBasket.split(",")[0].trim() || "SPY" : asset;
+    const runStrat = isCustom ? "momentum" : strategy;
+    setTimeout(() => { setResult(buildBacktest(runStrat, runAsset, start, end)); setRunning(false); }, 700);
   };
 
   const stratInfo = STRATEGIES.find(s => s.id === strategy)!;
@@ -109,19 +119,21 @@ export default function CanvasPage() {
 
         <div className="card" style={{ padding: "20px 24px", marginBottom: 20 }}>
           <div className="section-label" style={{ marginBottom: 14 }}>STRATEGY CONFIGURATION</div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr auto", gap: 14, alignItems: "end" }}>
+          <div style={{ display: "grid", gridTemplateColumns: isCustom ? "1fr 1fr 1fr auto" : "1fr 1fr 1fr 1fr auto", gap: 14, alignItems: "end" }}>
             <div>
               <label style={{ fontSize: 11, fontWeight: 700, color: "#64748b", display: "block", marginBottom: 6, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>Strategy</label>
               <select value={strategy} onChange={e => setStrategy(e.target.value)} style={{ width: "100%", height: 36, padding: "0 10px", border: "1px solid #e2e8f0", borderRadius: 6, fontSize: 13, color: "#0f172a", background: "#fff", fontFamily: "inherit", outline: "none" }}>
                 {STRATEGIES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
               </select>
             </div>
-            <div>
-              <label style={{ fontSize: 11, fontWeight: 700, color: "#64748b", display: "block", marginBottom: 6, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>Asset</label>
-              <select value={asset} onChange={e => setAsset(e.target.value)} style={{ width: "100%", height: 36, padding: "0 10px", border: "1px solid #e2e8f0", borderRadius: 6, fontSize: 13, color: "#0f172a", background: "#fff", fontFamily: "inherit", outline: "none" }}>
-                {ASSETS.map(a => <option key={a.id} value={a.id}>{a.label}</option>)}
-              </select>
-            </div>
+            {!isCustom && (
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 700, color: "#64748b", display: "block", marginBottom: 6, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>Asset</label>
+                <select value={asset} onChange={e => setAsset(e.target.value)} style={{ width: "100%", height: 36, padding: "0 10px", border: "1px solid #e2e8f0", borderRadius: 6, fontSize: 13, color: "#0f172a", background: "#fff", fontFamily: "inherit", outline: "none" }}>
+                  {ASSETS.map(a => <option key={a.id} value={a.id}>{a.label}</option>)}
+                </select>
+              </div>
+            )}
             <div>
               <label style={{ fontSize: 11, fontWeight: 700, color: "#64748b", display: "block", marginBottom: 6, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>Start Date</label>
               <input type="date" value={start} onChange={e => setStart(e.target.value)} style={{ width: "100%", height: 36, padding: "0 10px", border: "1px solid #e2e8f0", borderRadius: 6, fontSize: 13, color: "#0f172a", fontFamily: "inherit", outline: "none", boxSizing: "border-box" as const }} />
@@ -134,8 +146,24 @@ export default function CanvasPage() {
               {running ? "Running…" : "▶ Run"}
             </button>
           </div>
+
+          {isCustom && (
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginTop: 14 }}>
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 700, color: "#16a34a", display: "block", marginBottom: 6, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>Long Basket (comma-separated tickers)</label>
+                <input value={longBasket} onChange={e => setLongBasket(e.target.value)} placeholder="e.g. QQQ, NVDA, MSFT, AAPL" style={{ width: "100%", height: 36, padding: "0 10px", border: "1px solid #86efac", borderRadius: 6, fontSize: 13, color: "#0f172a", fontFamily: "inherit", outline: "none", boxSizing: "border-box" as const, background: "#f0fdf4" }} />
+              </div>
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 700, color: "#dc2626", display: "block", marginBottom: 6, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>Short Basket (optional)</label>
+                <input value={shortBasket} onChange={e => setShortBasket(e.target.value)} placeholder="e.g. TLT, GLD (leave empty for long-only)" style={{ width: "100%", height: 36, padding: "0 10px", border: "1px solid #fca5a5", borderRadius: 6, fontSize: 13, color: "#0f172a", fontFamily: "inherit", outline: "none", boxSizing: "border-box" as const, background: "#fef2f2" }} />
+              </div>
+            </div>
+          )}
+
           <div style={{ marginTop: 12, padding: "10px 14px", background: "#f8fafc", borderRadius: 5, fontSize: 12, color: "#475569" }}>
-            <strong>{stratInfo.label}</strong> on <strong>{assetInfo.label}</strong> — {stratInfo.desc}
+            {isCustom
+              ? <>Long: <strong style={{ color: "#16a34a" }}>{longBasket || "—"}</strong>{shortBasket && <> · Short: <strong style={{ color: "#dc2626" }}>{shortBasket}</strong></>} · {stratInfo.desc}</>
+              : <><strong>{stratInfo.label}</strong> on <strong>{assetInfo.label}</strong> — {stratInfo.desc}</>}
           </div>
         </div>
 

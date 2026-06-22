@@ -3,14 +3,16 @@ import { useState } from "react";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, Legend } from "recharts";
 
-const EVENTS = [
+const PRESET_EVENTS = [
   { id: "ukraine", label: "Russia-Ukraine War (Feb 2022)", category: "Geopolitical", summary: "Oil +40%, Gold +8%, SPX -12%, VIX +60%" },
   { id: "fed_hike", label: "Fed Rate Hike Cycle (Mar 2022)", category: "Monetary Policy", summary: "TLT -30%, SPX -18%, USD +15%, Gold -5%" },
   { id: "svb", label: "SVB Collapse (Mar 2023)", category: "Credit Event", summary: "Regional Banks -30%, TLT +5%, Gold +7%" },
   { id: "chatgpt", label: "ChatGPT Launch (Nov 2022)", category: "Technology", summary: "AI/Tech +80% over 12m, NVDA +400%" },
   { id: "election24", label: "2024 US Election (Nov 2024)", category: "Political", summary: "Bitcoin +40%, DXY +5%, SPX +4%, TLT -5%" },
   { id: "covid", label: "COVID Crash (Feb 2020)", category: "Black Swan", summary: "SPX -34%, Gold +25%, Oil -60%, BTC -50%" },
+  { id: "custom", label: "Custom Event", category: "Custom", summary: "Enter your own event details below" },
 ];
+const EVENTS = PRESET_EVENTS;
 
 const PAIRS = [
   { key: "safe_haven", label: "Safe Haven (Gold / TLT)" },
@@ -60,9 +62,14 @@ function ChartTT({ active, payload, label }: any) {
 export default function EventsPage() {
   const [selEvent, setSelEvent] = useState("ukraine");
   const [selPair, setSelPair] = useState("risk_on");
+  const [customName, setCustomName] = useState("");
+  const [customDate, setCustomDate] = useState("");
+  const [customSummary, setCustomSummary] = useState("");
+
+  const isCustom = selEvent === "custom";
   const event = EVENTS.find(e => e.id === selEvent)!;
   const pair = PAIRS.find(p => p.key === selPair)!;
-  const data = makeData(selEvent);
+  const data = makeData(isCustom ? "ukraine" : selEvent); // use default shape for custom
   const pairLabels = pair.label.match(/\((.+)\)/)?.[1].split(" / ") ?? ["Asset 1", "Asset 2"];
 
   return (
@@ -87,9 +94,26 @@ export default function EventsPage() {
               </button>
             ))}
           </div>
-          <div style={{ padding: "10px 14px", background: "#f8fafc", borderRadius: 6, fontSize: 13, color: "#475569" }}>
-            <strong>{event.label}</strong> — Typical reactions: {event.summary}
-          </div>
+          {isCustom ? (
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginTop: 4 }}>
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 700, color: "#64748b", display: "block", marginBottom: 5, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>Event Name</label>
+                <input value={customName} onChange={e => setCustomName(e.target.value)} placeholder="e.g. China Stimulus (Sep 2024)" style={{ width: "100%", height: 34, padding: "0 10px", border: "1px solid #e2e8f0", borderRadius: 5, fontSize: 13, outline: "none", fontFamily: "inherit", boxSizing: "border-box" as const }} />
+              </div>
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 700, color: "#64748b", display: "block", marginBottom: 5, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>Event Date</label>
+                <input type="date" value={customDate} onChange={e => setCustomDate(e.target.value)} style={{ width: "100%", height: 34, padding: "0 10px", border: "1px solid #e2e8f0", borderRadius: 5, fontSize: 13, outline: "none", fontFamily: "inherit", boxSizing: "border-box" as const }} />
+              </div>
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 700, color: "#64748b", display: "block", marginBottom: 5, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>Known Asset Reactions</label>
+                <input value={customSummary} onChange={e => setCustomSummary(e.target.value)} placeholder="e.g. MCHI +15%, Gold -2%" style={{ width: "100%", height: 34, padding: "0 10px", border: "1px solid #e2e8f0", borderRadius: 5, fontSize: 13, outline: "none", fontFamily: "inherit", boxSizing: "border-box" as const }} />
+              </div>
+            </div>
+          ) : (
+            <div style={{ padding: "10px 14px", background: "#f8fafc", borderRadius: 6, fontSize: 13, color: "#475569" }}>
+              <strong>{event.label}</strong> — Typical reactions: {event.summary}
+            </div>
+          )}
         </div>
 
         <div className="card" style={{ padding: "20px 24px", marginBottom: 20 }}>

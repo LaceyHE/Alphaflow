@@ -4,6 +4,15 @@ import { api } from "@/lib/api";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import DashboardSidebar from "@/components/DashboardSidebar";
 
+function generateHistory(price: number, change: number): number[] {
+  const startPrice = price / (1 + change / 100);
+  return Array.from({ length: 30 }, (_, i) => {
+    const t = i / 29;
+    const noise = Math.sin(i * 1.7) * price * 0.003;
+    return +(startPrice + (price - startPrice) * t + noise).toFixed(4);
+  });
+}
+
 const MACRO_META: Record<string, { icon: string; unit: string; color: string; commentary?: string }> = {
   "S&P 500":      { icon: "📈", unit: "pts", color: "#1d4ed8", commentary: "US large-cap benchmark. Leading risk-appetite indicator." },
   "Nasdaq":       { icon: "💻", unit: "pts", color: "#7c3aed", commentary: "Tech-heavy. Sensitive to rate expectations and AI narrative." },
@@ -89,7 +98,7 @@ export default function MacroPage() {
                 </div>
               </div>
               <ResponsiveContainer width="100%" height={220}>
-                <AreaChart data={selData.history.map((v: number, i: number) => ({ i, v }))}>
+                <AreaChart data={(selData.history ?? generateHistory(selData.price, selData.change)).map((v: number, i: number) => ({ i, v }))}>
                   <defs>
                     <linearGradient id="mg" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor={meta.color} stopOpacity={0.15} />
