@@ -48,7 +48,7 @@ export const MACRO_TICKERS: Record<string, string> = {
   "DXY":         "DX-Y.NYB",
   "Bitcoin":     "BTC-USD",
   "EUR/USD":     "EURUSD=X",
-  "JPY/USD":     "JPYUSD=X",
+  "USD/JPY":     "USDJPY=X",
   "Nikkei 225":  "^N225",
   "DAX":         "^GDAXI",
   "FTSE 100":    "^FTSE",

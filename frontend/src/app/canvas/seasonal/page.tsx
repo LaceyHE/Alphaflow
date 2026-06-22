@@ -58,7 +58,7 @@ export default function SeasonalPage() {
       <main style={{ flex: 1, padding: "24px 28px", overflowY: "auto" }}>
         <div className="section-label" style={{ marginBottom: 5 }}>CANVAS · SEASONAL PATTERNS</div>
         <h1 style={{ fontSize: 24, fontWeight: 800, color: "#0f172a", letterSpacing: "-0.02em", marginBottom: 4 }}>Historical Seasonality</h1>
-        <p style={{ color: "#64748b", fontSize: 13, marginBottom: 24 }}>Average monthly returns across election and non-election years, based on 30+ years of data.</p>
+        <p style={{ color: "#64748b", fontSize: 13, marginBottom: 24 }}>Average monthly return patterns across election and non-election years. <span style={{ color: "#b45309", fontWeight: 600 }}>Illustrative historical averages — for reference only, not live data.</span></p>
 
         <div style={{ display: "flex", gap: 6, marginBottom: 20 }}>
           {Object.keys(DATA).map(a => (

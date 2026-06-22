@@ -227,9 +227,9 @@ export default function DailyReportPage() {
           {/* Key signals */}
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {narrative ? [
-              { icon: "🔥", label: lang === "zh" ? "最拥挤交易" : "Most Crowded", item: narrative.signals.most_crowded },
-              { icon: "❄️", label: lang === "zh" ? "最冷门资产" : "Most Hated", item: narrative.signals.most_hated },
-              { icon: "🚀", label: lang === "zh" ? "新兴轮动" : "Emerging", item: narrative.signals.emerging },
+              { icon: "🔥", label: lang === "zh" ? "领涨" : "Leading", item: narrative.signals.leading },
+              { icon: "❄️", label: lang === "zh" ? "领跌" : "Lagging", item: narrative.signals.lagging },
+              { icon: "🚀", label: lang === "zh" ? "领先地区" : "Top Region", item: narrative.signals.top_region },
             ].map(({ icon, label, item }) => (
               <div key={label} className="card" style={{ padding: "13px 14px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 6 }}>

@@ -28,7 +28,7 @@ const RESPONSES_EN: string[] = [
   "US leads regionally at +2.1%, followed by Japan (+1.8%) on yen weakness. China is the notable underperformer at -3.4% amid property sector concerns. Emerging markets overall are mixed.",
   "VIX is currently at 13.8, below the long-term average of ~20. Historically, sub-15 VIX environments have preceded strong equity performance — the market is pricing in relatively low near-term volatility.",
   "Capital is rotating from defensive sectors (Utilities, Bonds) into risk assets (Tech, Financials). The 7D narrative shows a clear Risk-ON environment with SPX up 1.8%. Institutional flows suggest continued momentum.",
-  "Key signals: Most Crowded = Technology (trend following), Most Hated = Real Estate (rate sensitive), Emerging = Japan (structural inflow). Risk regime: BULL. Recommended posture: overweight growth, underweight duration.",
+  "Key signals: Leading = Technology (price momentum), Lagging = Real Estate (rate sensitive), Top Region = Japan (strong return). Risk regime: BULL based on SPX trend + VIX level. Recommended posture: overweight growth, underweight duration.",
   "Currently in a BULL regime — SPX above 200-day MA, VIX below 20, breadth positive. Key risks: Fed pivot timing, China slowdown, credit spreads. Sector rotation suggests late-cycle characteristics with Tech leading.",
 ];
 

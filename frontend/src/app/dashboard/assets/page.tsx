@@ -115,7 +115,7 @@ export default function AssetsPage() {
 
         {/* Inflow/Outflow bar */}
         <div className="card" style={{ padding: "16px 18px" }}>
-          <div className="section-label" style={{ marginBottom: 14 }}>OVERALL INFLOW / OUTFLOW · {tf}</div>
+          <div className="section-label" style={{ marginBottom: 14 }}>OVERALL PERFORMANCE · {tf}</div>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={assets} layout="vertical" margin={{ left: 110, right: 80 }} barSize={14}>
               <XAxis type="number" tickFormatter={v => `${v > 0 ? "+" : ""}${v.toFixed(0)}%`}

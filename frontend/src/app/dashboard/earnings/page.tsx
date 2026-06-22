@@ -151,11 +151,22 @@ export default function EarningsPage() {
         <h1 style={{ fontSize: 24, fontWeight: 800, color: "#0f172a", letterSpacing: "-0.02em", marginBottom: 4 }}>
           {lang === "zh" ? "财报预览与回顾" : "Earnings Review"}
         </h1>
-        <p style={{ color: "#64748b", fontSize: 13, marginBottom: 20 }}>
+        <p style={{ color: "#64748b", fontSize: 13, marginBottom: 12 }}>
           {lang === "zh"
             ? `${STOCKS.length} 只标普500成分股 · 点击查看详情`
             : `${STOCKS.length} S&P 500 companies · Click any ticker for full earnings breakdown`}
         </p>
+
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "10px 14px", background: "#fffbeb", border: "1px solid #fcd34d", borderRadius: 6, marginBottom: 16 }}>
+          <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1 }}>⚠️</span>
+          <span style={{ fontSize: 12, color: "#92400e", lineHeight: 1.5 }}>
+            <strong>{lang === "zh" ? "演示数据" : "ILLUSTRATIVE DATA"}</strong>
+            {" — "}
+            {lang === "zh"
+              ? "以下EPS和营收数据为演示用途，并非真实历史财报。生产版本请接入 Bloomberg、FactSet 或 Refinitiv 等专业数据源。"
+              : "EPS and revenue figures are generated for demonstration only and do not reflect actual reported results. Connect to Bloomberg, FactSet, or Refinitiv for live earnings data in production."}
+          </span>
+        </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "260px 1fr", gap: 16 }}>
           {/* Left: stock list */}

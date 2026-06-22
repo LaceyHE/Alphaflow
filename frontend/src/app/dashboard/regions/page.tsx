@@ -59,8 +59,8 @@ export default function RegionsPage() {
         {!loading && top && bot && (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 16 }}>
             {[
-              { label: "Top Inflow", name: top.name, change: top.change, ticker: top.ticker },
-              { label: "Top Outflow", name: bot.name, change: bot.change, ticker: bot.ticker },
+              { label: "Top Performer", name: top.name, change: top.change, ticker: top.ticker },
+              { label: "Weakest", name: bot.name, change: bot.change, ticker: bot.ticker },
               { label: "Avg Performance", name: `${(data.reduce((s,d)=>s+d.change,0)/data.length) >= 0 ? "+" : ""}${(data.reduce((s,d)=>s+d.change,0)/data.length).toFixed(2)}%`, change: data.reduce((s,d)=>s+d.change,0)/data.length, ticker: "" },
               { label: "Gainers / Losers", name: `${data.filter(d=>d.change>0).length} up · ${data.filter(d=>d.change<0).length} down`, change: 0, ticker: "" },
             ].map(({ label, name, change, ticker }) => (
@@ -80,7 +80,7 @@ export default function RegionsPage() {
 
         {/* Bar chart */}
         <div className="card" style={{ padding: "16px 18px", marginBottom: 14 }}>
-          <div className="section-label" style={{ marginBottom: 14 }}>INFLOW / OUTFLOW BY REGION ({tf})</div>
+          <div className="section-label" style={{ marginBottom: 14 }}>PERFORMANCE BY REGION ({tf})</div>
           {loading ? (
             <div style={{ height: 280, background: "#f8fafc", borderRadius: 4 }} />
           ) : (

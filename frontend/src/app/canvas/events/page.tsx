@@ -127,7 +127,7 @@ export default function EventsPage() {
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
             <div>
               <div className="section-label" style={{ marginBottom: 2 }}>PRICE REACTION — Days Before/After Event</div>
-              <div style={{ fontSize: 12, color: "#64748b" }}>Cumulative % change relative to T-20 days</div>
+              <div style={{ fontSize: 12, color: "#64748b" }}>Cumulative % change relative to T-20 days · <span style={{ color: "#b45309", fontWeight: 600 }}>Illustrative scenario — not backtested data</span></div>
             </div>
             <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
               {PAIRS.map(p => (

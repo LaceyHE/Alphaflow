@@ -33,9 +33,9 @@ export interface NarrativeData {
   tf?: string;
   lines: string[];
   signals: {
-    most_crowded: { name: string; change: number };
-    most_hated: { name: string; change: number };
-    emerging: { name: string; change: number };
+    leading: { name: string; change: number };
+    lagging: { name: string; change: number };
+    top_region: { name: string; change: number };
   };
   bull_bear: "bull" | "bear";
   spx_change: number;

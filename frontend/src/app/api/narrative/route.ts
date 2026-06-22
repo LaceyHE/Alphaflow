@@ -32,13 +32,13 @@ export async function GET(req: Request) {
   const botReg = regionData[regionData.length - 1];
 
   const lines = [
-    `Capital is rotating ${top.change > 0 ? "into" : "away from"} ${top.name} (${top.change >= 0 ? "+" : ""}${top.change.toFixed(2)}%) and ${bot.change < 0 ? "out of" : "into"} ${bot.name} (${bot.change.toFixed(2)}%) over the ${tf} period.`,
-    `${topReg.name} leads regional performance at ${topReg.change >= 0 ? "+" : ""}${topReg.change.toFixed(2)}%, while ${botReg.name} lags at ${botReg.change.toFixed(2)}%.`,
-    `Market sentiment is ${bull_bear === "bull" ? "RISK-ON" : "RISK-OFF"} — VIX at ${vixPrice.toFixed(1)}, SPX ${spxChange >= 0 ? "+" : ""}${spxChange.toFixed(2)}%. ${bull_bear === "bull" ? "Momentum favors equities and high-beta assets." : "Defensive positioning recommended; watch bonds and gold."}`,
+    `Price momentum leads in ${top.name} (${top.change >= 0 ? "+" : ""}${top.change.toFixed(2)}%) and trails in ${bot.name} (${bot.change.toFixed(2)}%) over the ${tf} period. Based on ETF price returns as a flow proxy.`,
+    `${topReg.name} leads regional return at ${topReg.change >= 0 ? "+" : ""}${topReg.change.toFixed(2)}%, while ${botReg.name} lags at ${botReg.change.toFixed(2)}%.`,
+    `Market regime is ${bull_bear === "bull" ? "RISK-ON" : "RISK-OFF"} — VIX at ${vixPrice.toFixed(1)}, SPX ${spxChange >= 0 ? "+" : ""}${spxChange.toFixed(2)}%. ${bull_bear === "bull" ? "Momentum favors equities and high-beta assets." : "Defensive positioning recommended; watch bonds and gold."}`,
   ];
 
   return NextResponse.json({
     tf, bull_bear, spx_change: spxChange, vix: vixPrice, lines,
-    signals: { most_crowded: top, most_hated: bot, emerging: topReg },
+    signals: { leading: top, lagging: bot, top_region: topReg },
   });
 }

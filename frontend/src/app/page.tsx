@@ -67,9 +67,9 @@ export default function HeroPage() {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 190px", gap: 12, marginTop: 16 }}>
         {narrative ? (
           <>
-            <MetricCard label={t("most_crowded")} item={narrative.signals.most_crowded} />
-            <MetricCard label={t("most_hated")} item={narrative.signals.most_hated} />
-            <MetricCard label={t("emerging")} item={narrative.signals.emerging} />
+            <MetricCard label={t("leading")} item={narrative.signals.leading} />
+            <MetricCard label={t("lagging")} item={narrative.signals.lagging} />
+            <MetricCard label={t("top_region")} item={narrative.signals.top_region} />
           </>
         ) : Array(3).fill(0).map((_, i) => (
           <div key={i} className="card" style={{ height: 90, background: "#f1f5f9" }} />
@@ -121,7 +121,7 @@ export default function HeroPage() {
         {/* Sankey */}
         <div className="card" style={{ padding: "16px 18px" }}>
           <div className="section-label" style={{ marginBottom: 4 }}>{t("capital_flow_map")}</div>
-          <div style={{ fontSize: 13, color: "#64748b", marginBottom: 14 }}>Asset Classes → Regions → Sectors</div>
+          <div style={{ fontSize: 13, color: "#64748b", marginBottom: 14 }}>Asset Classes → Regions → Sectors · Link width ≈ ETF return magnitude</div>
           {loading ? (
             <div style={{ height: 340, background: "#f8fafc", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center" }}>
               <span style={{ fontSize: 13, color: "#94a3b8" }}>Loading flow data…</span>
@@ -146,7 +146,7 @@ export default function HeroPage() {
       <div className="card" style={{ padding: "16px 18px", marginTop: 14 }}>
         <div className="section-label" style={{ marginBottom: 4 }}>{t("flow_show")} · {tf}</div>
         <div style={{ fontSize: 13, color: "#64748b", marginBottom: 14 }}>
-          All asset classes, regions & sectors — green = inflow, red = outflow
+          All asset classes, regions & sectors — green = positive return, red = negative return
         </div>
         {loading ? (
           <div style={{ height: 380, background: "#f8fafc", borderRadius: 4 }} />
@@ -242,6 +242,7 @@ function MetricCard({ label, item }: { label: string; item: { name: string; chan
       <div style={{ fontSize: 15, fontWeight: 700, color: pos ? "#16a34a" : "#dc2626", fontVariantNumeric: "tabular-nums" }}>
         {pos ? "+" : ""}{item.change.toFixed(2)}%
       </div>
+      <div style={{ fontSize: 10, color: "#94a3b8", marginTop: 4 }}>by ETF price return</div>
     </div>
   );
 }

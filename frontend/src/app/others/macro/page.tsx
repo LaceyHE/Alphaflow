@@ -41,7 +41,7 @@ const MACRO_META: Record<string, { icon: string; unit: string; color: string; gr
   "Copper":      { icon: "🔶", unit: "$",   color: "#c2410c", group: "Commodities",   commentary: "'Dr. Copper' — leading economic indicator. Rising = growth expectations, industrial expansion." },
   "DXY":         { icon: "💵", unit: "pts", color: "#1e40af", group: "FX & Crypto",   commentary: "Dollar strength index vs basket of 6 major currencies. Inversely correlated with EM, commodities." },
   "EUR/USD":     { icon: "🇪🇺", unit: "",  color: "#1d4ed8", group: "FX & Crypto",   commentary: "Most traded FX pair. EUR weakness = ECB dovishness or EU macro stress." },
-  "JPY/USD":     { icon: "🇯🇵", unit: "",  color: "#0891b2", group: "FX & Crypto",   commentary: "JPY is a risk-off currency. Weak JPY = BOJ ultra-loose policy, carry trade flows." },
+  "USD/JPY":     { icon: "🇯🇵", unit: "",  color: "#0891b2", group: "FX & Crypto",   commentary: "USD/JPY measures yen strength vs the dollar. High = weak yen (carry trade, BOJ ultra-loose). A key barometer of risk appetite and Japan's reflation trade." },
   "Bitcoin":     { icon: "₿",  unit: "$",   color: "#f59e0b", group: "FX & Crypto",   commentary: "Digital gold narrative + risk asset. High beta to liquidity conditions and Fed policy." },
   "Nikkei 225":  { icon: "🗾", unit: "pts", color: "#16a34a", group: "International", commentary: "Japan's benchmark. Benefiting from yen weakness and domestic reflation. Buffett effect in play." },
   "DAX":         { icon: "🇩🇪", unit: "pts",color: "#0ea5e9", group: "International", commentary: "Germany's index — EU's largest economy. Manufacturing & exports exposure. Energy-sensitive." },
@@ -148,6 +148,8 @@ export default function MacroPage() {
             : filteredEntries.map(([name, d]) => {
               const m = MACRO_META[name] || { icon: "📊", color: "#64748b" };
               const pos = d.change >= 0;
+              const isVIX = name === "VIX";
+              const changeColor = isVIX ? (pos ? "#d97706" : "#16a34a") : (pos ? "#16a34a" : "#dc2626");
               return (
                 <div key={name} onClick={() => setSel(name)} className="card" style={{
                   padding: "10px 12px", cursor: "pointer",
@@ -158,16 +160,18 @@ export default function MacroPage() {
                 }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
                     <span style={{ fontSize: 14 }}>{m.icon}</span>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: pos ? "#16a34a" : "#dc2626", fontVariantNumeric: "tabular-nums" }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: changeColor, fontVariantNumeric: "tabular-nums" }}>
                       {pos ? "▲" : "▼"}{Math.abs(d.change).toFixed(2)}%
                     </span>
                   </div>
                   <div style={{ fontSize: 10, fontWeight: 600, color: "#64748b", marginBottom: 2, whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis" }}>{name}</div>
                   <div style={{ fontSize: 13, fontWeight: 700, color: "#0f172a", fontVariantNumeric: "tabular-nums" }}>
-                    {name.includes("Treasury") || name === "VIX"
-                      ? `${d.price.toFixed(2)}%`
-                      : name === "EUR/USD" || name === "JPY/USD"
+                    {name.includes("Treasury") || isVIX
+                      ? `${d.price.toFixed(2)}${isVIX ? "" : "%"}`
+                      : name === "EUR/USD"
                       ? d.price.toFixed(4)
+                      : name === "USD/JPY"
+                      ? d.price.toFixed(2)
                       : d.price >= 1000
                       ? d.price.toLocaleString(undefined, { maximumFractionDigits: 0 })
                       : `$${d.price.toFixed(2)}`}
@@ -187,15 +191,19 @@ export default function MacroPage() {
                   <div>
                     <div style={{ fontWeight: 800, fontSize: 18, color: "#0f172a" }}>{sel}</div>
                     <div style={{ fontSize: 13, color: "#64748b" }}>
-                      {sel.includes("Treasury") || sel === "VIX"
+                      {sel.includes("Treasury")
                         ? `${selData.price.toFixed(3)}%`
-                        : sel === "EUR/USD" || sel === "JPY/USD"
+                        : sel === "VIX"
+                        ? selData.price.toFixed(2)
+                        : sel === "EUR/USD"
                         ? selData.price.toFixed(4)
+                        : sel === "USD/JPY"
+                        ? selData.price.toFixed(2)
                         : selData.price >= 1000
                         ? selData.price.toLocaleString(undefined, { maximumFractionDigits: 0 })
                         : `$${selData.price.toFixed(2)}`}
                       &nbsp;
-                      <span style={{ fontWeight: 700, color: selData.change >= 0 ? "#16a34a" : "#dc2626" }}>
+                      <span style={{ fontWeight: 700, color: sel === "VIX" ? (selData.change >= 0 ? "#d97706" : "#16a34a") : (selData.change >= 0 ? "#16a34a" : "#dc2626") }}>
                         {selData.change >= 0 ? "▲+" : "▼"}{selData.change.toFixed(2)}%
                       </span>
                     </div>
@@ -206,7 +214,7 @@ export default function MacroPage() {
                 </span>
               </div>
               <div style={{ fontSize: 11, color: "#94a3b8", marginBottom: 10 }}>
-                Indexed to 100 (start of period) · 60-day simulated history
+                Indexed to 100 (start of period) · Estimated 60-day trend · Illustrative only
               </div>
               <ResponsiveContainer width="100%" height={220}>
                 <AreaChart data={indexedData} margin={{ top: 4, right: 8, bottom: 4, left: 0 }}>
@@ -234,20 +242,20 @@ export default function MacroPage() {
               {/* Commentary */}
               <div className="card" style={{ padding: "16px 18px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 10 }}>
-                  <span>🤖</span>
-                  <div className="section-label">AI COMMENTARY</div>
+                  <span>📋</span>
+                  <div className="section-label">INDICATOR CONTEXT</div>
                 </div>
                 <p style={{ fontSize: 13, color: "#475569", lineHeight: 1.7 }}>{meta.commentary}</p>
               </div>
 
-              {/* Signal */}
-              <div className="card" style={{ padding: "14px 16px", background: selData.change >= 0 ? "#f0fdf4" : "#fef2f2", borderColor: selData.change >= 0 ? "#86efac" : "#fca5a5" }}>
-                <div style={{ fontSize: 9, color: "#94a3b8", textTransform: "uppercase" as const, letterSpacing: "0.08em", marginBottom: 6 }}>TREND SIGNAL</div>
-                <div style={{ fontSize: 18, fontWeight: 800, color: selData.change >= 0 ? "#16a34a" : "#dc2626" }}>
-                  {selData.change >= 3 ? "Strong BUY" : selData.change >= 0.5 ? "BUY" : selData.change > -0.5 ? "NEUTRAL" : selData.change > -3 ? "SELL" : "Strong SELL"}
+              {/* Momentum signal */}
+              <div className="card" style={{ padding: "14px 16px", background: sel === "VIX" ? (selData.change >= 0 ? "#fffbeb" : "#f0fdf4") : (selData.change >= 0 ? "#f0fdf4" : "#fef2f2"), borderColor: sel === "VIX" ? (selData.change >= 0 ? "#fcd34d" : "#86efac") : (selData.change >= 0 ? "#86efac" : "#fca5a5") }}>
+                <div style={{ fontSize: 9, color: "#94a3b8", textTransform: "uppercase" as const, letterSpacing: "0.08em", marginBottom: 6 }}>MOMENTUM SIGNAL</div>
+                <div style={{ fontSize: 18, fontWeight: 800, color: sel === "VIX" ? (selData.change >= 0 ? "#d97706" : "#16a34a") : (selData.change >= 0 ? "#16a34a" : "#dc2626") }}>
+                  {selData.change >= 3 ? "Strong Uptrend" : selData.change >= 0.5 ? "Uptrend" : selData.change > -0.5 ? "Neutral" : selData.change > -3 ? "Downtrend" : "Strong Downtrend"}
                 </div>
                 <div style={{ fontSize: 11, color: "#64748b", marginTop: 4 }}>
-                  {Math.abs(selData.change).toFixed(2)}% {selData.change >= 0 ? "gain" : "loss"} · Trend following model
+                  {Math.abs(selData.change).toFixed(2)}% {selData.change >= 0 ? "gain" : "loss"} · Price momentum only · Not investment advice
                 </div>
               </div>
 
@@ -266,7 +274,7 @@ export default function MacroPage() {
               <div className="card" style={{ padding: "14px 16px" }}>
                 <div className="section-label" style={{ marginBottom: 10 }}>QUICK STATS</div>
                 {[
-                  { label: "Current", value: sel.includes("Treasury") || sel === "VIX" ? `${selData.price.toFixed(3)}%` : selData.price >= 1000 ? selData.price.toLocaleString(undefined, { maximumFractionDigits: 0 }) : `$${selData.price.toFixed(2)}` },
+                  { label: "Current", value: sel.includes("Treasury") ? `${selData.price.toFixed(3)}%` : sel === "VIX" ? selData.price.toFixed(2) : sel === "EUR/USD" ? selData.price.toFixed(4) : sel === "USD/JPY" ? selData.price.toFixed(2) : selData.price >= 1000 ? selData.price.toLocaleString(undefined, { maximumFractionDigits: 0 }) : `$${selData.price.toFixed(2)}` },
                   { label: "Change", value: `${selData.change >= 0 ? "+" : ""}${selData.change.toFixed(3)}%` },
                   { label: "Period Start (est.)", value: (() => { const s = selData.price / (1 + selData.change / 100); return s >= 1000 ? s.toLocaleString(undefined, { maximumFractionDigits: 0 }) : s.toFixed(2); })() },
                 ].map(r => (

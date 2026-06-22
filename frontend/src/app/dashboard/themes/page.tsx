@@ -93,7 +93,7 @@ function QuadrantChart({ data, width = 680, height = 400 }: { data: ThemePoint[]
         ))}
 
         {/* Axis labels */}
-        <text x={ML + PW / 2} y={height - 4} textAnchor="middle" fill="#94a3b8" fontSize={9}>← Outflow  |  Inflow →</text>
+        <text x={ML + PW / 2} y={height - 4} textAnchor="middle" fill="#94a3b8" fontSize={9}>← Negative Return  |  Positive Return →</text>
         <text x={11} y={MT + PH / 2} textAnchor="middle" fill="#94a3b8" fontSize={9} transform={`rotate(-90, 11, ${MT + PH / 2})`}>Momentum Δ</text>
 
         {/* Movement arrows (prev → current) */}
