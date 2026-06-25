@@ -99,12 +99,31 @@ function LLMSettings({ onClose }: { onClose: () => void }) {
 }
 
 export default function DailyReportPage() {
-  const { lang } = useLang();
+  const { lang, t } = useLang();
   const [narrative, setNarrative] = useState<NarrativeData | null>(null);
   const [macro, setMacro] = useState<any>({});
   const [sectors, setSectors] = useState<any[]>([]);
   const [regions, setRegions] = useState<any[]>([]);
   const [showLLM, setShowLLM] = useState(false);
+  const [reportFocus, setReportFocus] = useState(() =>
+    typeof window !== "undefined" ? localStorage.getItem("af_report_focus") || "" : ""
+  );
+  const [focusInput, setFocusInput] = useState(reportFocus);
+  const [focusSaved, setFocusSaved] = useState(false);
+  const [showFocusEditor, setShowFocusEditor] = useState(false);
+
+  const saveFocus = () => {
+    localStorage.setItem("af_report_focus", focusInput);
+    setReportFocus(focusInput);
+    setFocusSaved(true);
+    setTimeout(() => { setFocusSaved(false); setShowFocusEditor(false); }, 1500);
+  };
+  const clearFocus = () => {
+    setFocusInput("");
+    setReportFocus("");
+    localStorage.removeItem("af_report_focus");
+    setShowFocusEditor(false);
+  };
 
   useEffect(() => {
     Promise.all([
@@ -174,6 +193,62 @@ export default function DailyReportPage() {
 
         {/* LLM Settings panel */}
         {showLLM && <LLMSettings onClose={() => setShowLLM(false)} />}
+
+        {/* NL Report Focus */}
+        <div style={{ marginBottom: 16 }}>
+          {!showFocusEditor ? (
+            <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", background: reportFocus ? "#f0fdf4" : "#f8fafc", border: `1px solid ${reportFocus ? "#86efac" : "#e2e8f0"}`, borderRadius: 7 }}>
+              <span style={{ fontSize: 14 }}>🎯</span>
+              <div style={{ flex: 1, fontSize: 12, color: reportFocus ? "#16a34a" : "#94a3b8" }}>
+                {reportFocus
+                  ? <><strong style={{ color: "#0f172a" }}>{t("report_focus_saved")}:</strong> {reportFocus}</>
+                  : (lang === "zh" ? "设置报告关注点（自然语言）— 定制AI叙述" : "Set a report focus in natural language — customize the AI narrative")}
+              </div>
+              <button onClick={() => { setFocusInput(reportFocus); setShowFocusEditor(true); }} style={{
+                padding: "5px 12px", fontSize: 11, fontWeight: 600, borderRadius: 5, cursor: "pointer",
+                border: "1px solid #e2e8f0", background: "#fff", color: "#475569", fontFamily: "inherit",
+              }}>
+                {reportFocus ? t("report_customize_btn") : (lang === "zh" ? "+ 添加关注点" : "+ Add Focus")}
+              </button>
+              {reportFocus && (
+                <button onClick={clearFocus} style={{ padding: "5px 10px", fontSize: 11, borderRadius: 5, cursor: "pointer", border: "1px solid #fca5a5", background: "#fef2f2", color: "#dc2626", fontFamily: "inherit" }}>
+                  {t("report_focus_clear")}
+                </button>
+              )}
+            </div>
+          ) : (
+            <div style={{ padding: "14px 16px", background: "#f0f6ff", border: "1px solid #93c5fd", borderRadius: 8 }}>
+              <label style={{ fontSize: 11, fontWeight: 700, color: "#1d4ed8", display: "block", marginBottom: 6, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>
+                {t("report_focus_label")}
+              </label>
+              <textarea
+                value={focusInput}
+                onChange={e => setFocusInput(e.target.value)}
+                placeholder={t("report_focus_placeholder")}
+                rows={2}
+                style={{
+                  width: "100%", padding: "10px 12px",
+                  border: "1px solid #93c5fd", borderRadius: 6, fontSize: 13,
+                  fontFamily: "inherit", resize: "vertical", outline: "none",
+                  background: "#fff", color: "#0f172a", boxSizing: "border-box" as const,
+                }}
+              />
+              <div style={{ display: "flex", gap: 8, marginTop: 8, alignItems: "center" }}>
+                <button onClick={saveFocus} style={{
+                  padding: "6px 16px", fontSize: 12, fontWeight: 700, borderRadius: 5,
+                  background: focusSaved ? "#16a34a" : "#1e3a5f", color: "#fff",
+                  border: "none", cursor: "pointer", fontFamily: "inherit",
+                }}>
+                  {focusSaved ? `✓ ${t("report_focus_saved")}` : (lang === "zh" ? "保存" : "Save")}
+                </button>
+                <button onClick={() => setShowFocusEditor(false)} style={{ padding: "6px 12px", fontSize: 12, borderRadius: 5, border: "1px solid #e2e8f0", background: "#fff", color: "#64748b", cursor: "pointer", fontFamily: "inherit" }}>
+                  {lang === "zh" ? "取消" : "Cancel"}
+                </button>
+                <span style={{ fontSize: 11, color: "#94a3b8" }}>{t("report_focus_hint")}</span>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Macro strip */}
         <div className="card" style={{ padding: "14px 18px", marginBottom: 16 }}>

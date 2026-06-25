@@ -46,7 +46,7 @@ export default function AssetsPage() {
     <div style={{ display: "flex", minHeight: "calc(100vh - 56px)" }}>
       <DashboardSidebar />
       <div className="page-content">
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 16, gap: 10, flexWrap: "wrap" }}>
           <div>
             <div className="section-label" style={{ marginBottom: 3 }}>FLOW ANALYTICS · ASSET CLASS ROTATION</div>
             <h1 style={{ fontSize: 20, fontWeight: 700, color: "#0f172a" }}>Cross-Asset Flow Overview</h1>

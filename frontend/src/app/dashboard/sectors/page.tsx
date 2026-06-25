@@ -57,7 +57,7 @@ export default function SectorsPage() {
     <div style={{ display: "flex", minHeight: "calc(100vh - 56px)" }}>
       <DashboardSidebar />
       <div className="page-content">
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 16, gap: 10, flexWrap: "wrap" }}>
           <div>
             <div className="section-label" style={{ marginBottom: 3 }}>FLOW ANALYTICS · SECTOR ROTATION</div>
             <h1 style={{ fontSize: 20, fontWeight: 700, color: "#0f172a" }}>Sector Rotation &amp; Valuation</h1>
@@ -74,7 +74,7 @@ export default function SectorsPage() {
         <div className="card" style={{ padding: "16px 18px", marginBottom: 14 }}>
           <div className="section-label" style={{ marginBottom: 14 }}>SECTOR HEATMAP · {tf}</div>
           {loading ? (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))", gap: 8 }}>
               {Array(11).fill(0).map((_,i) => <div key={i} style={{ height: 80, background: "#f1f5f9", borderRadius: 5 }} />)}
             </div>
           ) : (
