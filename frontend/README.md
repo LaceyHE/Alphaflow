@@ -2,7 +2,11 @@
 
 > Real-time capital rotation intelligence across regions, assets, sectors, and themes — built for institutional and sophisticated retail investors.
 
-**Live:** [alphaflow.vercel.app](https://alphaflow.vercel.app) &nbsp;·&nbsp; Deployed on Vercel (HK region for China access) &nbsp;·&nbsp; Data via Yahoo Finance
+## 🌐 Live Site
+
+**[https://alphaflow-lacey-he.vercel.app](https://alphaflow-lacey-he.vercel.app)**
+
+Deployed on Vercel · Hong Kong region (hkg1) for China routing · Data via Yahoo Finance
 
 ---
 
@@ -147,7 +151,7 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000) — or visit the live site at **[https://alphaflow-lacey-he.vercel.app](https://alphaflow-lacey-he.vercel.app)**.
 
 ---
 
